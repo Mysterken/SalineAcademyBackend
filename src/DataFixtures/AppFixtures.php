@@ -24,7 +24,7 @@ class AppFixtures extends Fixture
     /**
      * @throws Exception
      */
-    public function load(ObjectManager $manager): void
+    public function load(ObjectManager $manager, ): void
     {
 
         $faker = Factory::create();
@@ -92,6 +92,15 @@ class AppFixtures extends Fixture
                 ->setPoints($faker->numberBetween(1, 100))
                 ->setImageUrl(randomPic(50));
             $manager->persist($achievement);
+            $manager->flush();
+        }
+
+        $achievements = $manager->getRepository(Achievement::class)->findAll();
+
+        for ($i = 0; $i < random_int(15, 50); $i++) {
+            $user = $users[array_rand($users)]
+                ->addAchievement($achievements[array_rand($achievements)]);
+            $manager->persist($user);
         }
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
@@ -101,6 +110,15 @@ class AppFixtures extends Fixture
                 ->setDescription($faker->text())
                 ->setImageUrl(randomPic(50));
             $manager->persist($badge);
+            $manager->flush();
+        }
+
+        $badges = $manager->getRepository(Badge::class)->findAll();
+
+        for ($i = 0; $i < random_int(15, 50); $i++) {
+            $user = $users[array_rand($users)]
+                ->addBadge($badges[array_rand($badges)]);
+            $manager->persist($user);
         }
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
@@ -110,12 +128,30 @@ class AppFixtures extends Fixture
                 ->setCreatedAt(DateTimeImmutable::createFromMutable($faker->dateTime()))
                 ->setUpdatedAt($faker->dateTime());
             $manager->persist($category);
+            $manager->flush();
+        }
+
+        $categories = $manager->getRepository(Category::class)->findAll();
+
+        for ($i = 0; $i < random_int(15, 50); $i++) {
+            $masterclass = $masterclasses[array_rand($masterclasses)]
+                ->addCategory($categories[array_rand($categories)]);
+            $manager->persist($masterclass);
         }
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
             $tag = new Tag();
             $tag->setName($faker->word());
             $manager->persist($tag);
+            $manager->flush();
+        }
+
+        $tags = $manager->getRepository(Tag::class)->findAll();
+
+        for ($i = 0; $i < random_int(15, 50); $i++) {
+            $masterclass = $masterclasses[array_rand($masterclasses)]
+                ->addTag($tags[array_rand($tags)]);
+            $manager->persist($masterclass);
         }
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
@@ -142,7 +178,6 @@ class AppFixtures extends Fixture
                 ->setUser($users[array_rand($users)])
                 ->setMasterclass($masterclasses[array_rand($masterclasses)])
                 ->setLesson($lessons[array_rand($lessons)])
-                ->setIsCompleted($faker->boolean())
                 ->setPoints($faker->numberBetween(1, 100))
                 ->setCompletionDate($faker->dateTime());
             $manager->persist($progress);
