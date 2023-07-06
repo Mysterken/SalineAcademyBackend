@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CategoryRepository;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -26,6 +28,14 @@ class Category implements EntityTimestampInterface
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?DateTimeInterface $updatedAt = null;
+
+    #[ORM\ManyToMany(targetEntity: Masterclass::class, mappedBy: 'categories')]
+    private Collection $masterclasses;
+
+    public function __construct()
+    {
+        $this->masterclasses = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -64,6 +74,33 @@ class Category implements EntityTimestampInterface
     public function setUpdatedAt(DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Masterclass>
+     */
+    public function getMasterclasses(): Collection
+    {
+        return $this->masterclasses;
+    }
+
+    public function addMasterclass(Masterclass $masterclass): static
+    {
+        if (!$this->masterclasses->contains($masterclass)) {
+            $this->masterclasses->add($masterclass);
+            $masterclass->addCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMasterclass(Masterclass $masterclass): static
+    {
+        if ($this->masterclasses->removeElement($masterclass)) {
+            $masterclass->removeCategory($this);
+        }
 
         return $this;
     }

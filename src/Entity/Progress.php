@@ -30,9 +30,6 @@ class Progress
     private ?Lesson $lesson = null;
 
     #[ORM\Column]
-    private ?bool $isCompleted = null;
-
-    #[ORM\Column]
     private ?int $points = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -75,18 +72,6 @@ class Progress
     public function setLesson(?Lesson $lesson): static
     {
         $this->lesson = $lesson;
-
-        return $this;
-    }
-
-    public function isIsCompleted(): ?bool
-    {
-        return $this->isCompleted;
-    }
-
-    public function setIsCompleted(bool $isCompleted): static
-    {
-        $this->isCompleted = $isCompleted;
 
         return $this;
     }

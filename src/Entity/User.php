@@ -70,6 +70,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Rating::class)]
     private Collection $ratings;
 
+    #[ORM\ManyToMany(targetEntity: Badge::class, inversedBy: 'users')]
+    private Collection $badges;
+
+    #[ORM\ManyToMany(targetEntity: Achievement::class, inversedBy: 'users')]
+    private Collection $achievements;
+
     public function __construct()
     {
         $this->enrollments = new ArrayCollection();
@@ -77,6 +83,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
         $this->masterclasses = new ArrayCollection();
         $this->progress = new ArrayCollection();
         $this->ratings = new ArrayCollection();
+        $this->badges = new ArrayCollection();
+        $this->achievements = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -379,6 +387,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
                 $rating->setAuthor(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Badge>
+     */
+    public function getBadges(): Collection
+    {
+        return $this->badges;
+    }
+
+    public function addBadge(Badge $badge): static
+    {
+        if (!$this->badges->contains($badge)) {
+            $this->badges->add($badge);
+        }
+
+        return $this;
+    }
+
+    public function removeBadge(Badge $badge): static
+    {
+        $this->badges->removeElement($badge);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Achievement>
+     */
+    public function getAchievements(): Collection
+    {
+        return $this->achievements;
+    }
+
+    public function addAchievement(Achievement $achievement): static
+    {
+        if (!$this->achievements->contains($achievement)) {
+            $this->achievements->add($achievement);
+        }
+
+        return $this;
+    }
+
+    public function removeAchievement(Achievement $achievement): static
+    {
+        $this->achievements->removeElement($achievement);
 
         return $this;
     }
