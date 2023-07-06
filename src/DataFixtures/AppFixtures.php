@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Achievement;
 use App\Entity\Badge;
 use App\Entity\Category;
+use App\Entity\Enrollment;
 use App\Entity\Lesson;
 use App\Entity\Masterclass;
 use App\Entity\Point;
@@ -72,6 +73,16 @@ class AppFixtures extends Fixture
         }
 
         $masterclasses = $manager->getRepository(Masterclass::class)->findAll();
+
+        for ($i = 0; $i < random_int(15, 50); $i++) {
+            $enrollment = new Enrollment();
+            $enrollment
+                ->setUser($users[array_rand($users)])
+                ->setMasterclass($masterclasses[array_rand($masterclasses)])
+                ->setPoints($faker->numberBetween(1, 100))
+                ->setEnrollmentDate(DateTimeImmutable::createFromMutable($faker->dateTime()));
+            $manager->persist($enrollment);
+        }
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
             $lesson = new Lesson();
