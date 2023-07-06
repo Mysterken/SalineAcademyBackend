@@ -18,16 +18,22 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker\Factory;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 
 class AppFixtures extends Fixture
 {
     /**
      * @throws Exception
      */
-    public function load(ObjectManager $manager, ): void
+    public function load(ObjectManager $manager): void
     {
 
         $faker = Factory::create();
+        $passwordHasher = new PasswordHasherFactory([
+            User::class => ['algorithm' => 'auto']
+        ]);
+        $passwordHasher = $passwordHasher->getPasswordHasher(User::class);
+
         function randomPic($size = 200): string
         {
             return 'https://picsum.photos/id/' . random_int(0, 1084) . '/' .  $size;
@@ -37,7 +43,7 @@ class AppFixtures extends Fixture
             $user = new User();
             $user
                 ->setEmail($faker->email())
-                ->setPassword($faker->password())
+                ->setPassword($passwordHasher->hash($faker->password()))
                 ->setFirstName($faker->firstName())
                 ->setLastName($faker->lastName())
                 ->setUsername($faker->userName())
