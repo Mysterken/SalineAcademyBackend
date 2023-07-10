@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Repository\MasterclassRepository;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -11,8 +13,14 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MasterclassRepository::class)]
+#[ApiResource]
 class Masterclass implements EntityTimestampInterface
 {
+    const DIFFICULTY_LEVEL_BEGINNER = 1;
+    const DIFFICULTY_LEVEL_INTERMEDIATE = 2;
+    const DIFFICULTY_LEVEL_ADVANCED = 3;
+    const DIFFICULTY_LEVEL_EXPERT = 4;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -52,12 +60,19 @@ class Masterclass implements EntityTimestampInterface
     #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'masterclasses')]
     private Collection $tags;
 
+    #[ORM\OneToMany(mappedBy: 'masterclass', targetEntity: Rating::class)]
+    private Collection $ratings;
+
+    #[ORM\Column(nullable: false)]
+    private ?int $difficultyLevel = self::DIFFICULTY_LEVEL_INTERMEDIATE;
+
     public function __construct()
     {
         $this->enrollments = new ArrayCollection();
         $this->lessons = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->tags = new ArrayCollection();
+        $this->ratings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -253,6 +268,48 @@ class Masterclass implements EntityTimestampInterface
     public function removeTag(Tag $tag): static
     {
         $this->tags->removeElement($tag);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Rating>
+     */
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
+    }
+
+    public function addRating(Rating $rating): static
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings->add($rating);
+            $rating->setMasterclass($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): static
+    {
+        if ($this->ratings->removeElement($rating)) {
+            // set the owning side to null (unless already changed)
+            if ($rating->getMasterclass() === $this) {
+                $rating->setMasterclass(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDifficultyLevel(): ?int
+    {
+        return $this->difficultyLevel;
+    }
+
+    public function setDifficultyLevel(?int $difficultyLevel): static
+    {
+        $this->difficultyLevel = $difficultyLevel;
 
         return $this;
     }

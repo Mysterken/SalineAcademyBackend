@@ -20,9 +20,6 @@ class Enrollment
     private ?User $user = null;
 
     #[ORM\Column]
-    private ?int $points = null;
-
-    #[ORM\Column]
     private ?DateTimeImmutable $enrollmentDate = null;
 
     #[ORM\ManyToOne(inversedBy: 'enrollments')]
@@ -42,18 +39,6 @@ class Enrollment
     public function setUser(?User $user): static
     {
         $this->user = $user;
-
-        return $this;
-    }
-
-    public function getPoints(): ?int
-    {
-        return $this->points;
-    }
-
-    public function setPoints(int $points): static
-    {
-        $this->points = $points;
 
         return $this;
     }

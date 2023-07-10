@@ -66,6 +66,12 @@ class AppFixtures extends Fixture
                 ->setThumbnailUrl(randomPic(200))
                 ->setAuthor($users[array_rand($users)])
                 ->setPrice((string)$faker->numberBetween(1, 100))
+                ->setDifficultyLevel($faker->randomElement([
+                    Masterclass::DIFFICULTY_LEVEL_BEGINNER,
+                    Masterclass::DIFFICULTY_LEVEL_INTERMEDIATE,
+                    Masterclass::DIFFICULTY_LEVEL_ADVANCED,
+                    Masterclass::DIFFICULTY_LEVEL_EXPERT
+                ]))
                 ->setCreatedAt(DateTimeImmutable::createFromMutable($faker->dateTime()))
                 ->setUpdatedAt($faker->dateTime());
             $manager->persist($masterclass);
@@ -79,7 +85,6 @@ class AppFixtures extends Fixture
             $enrollment
                 ->setUser($users[array_rand($users)])
                 ->setMasterclass($masterclasses[array_rand($masterclasses)])
-                ->setPoints($faker->numberBetween(1, 100))
                 ->setEnrollmentDate(DateTimeImmutable::createFromMutable($faker->dateTime()));
             $manager->persist($enrollment);
         }
@@ -89,7 +94,6 @@ class AppFixtures extends Fixture
             $lesson
                 ->setTitle($faker->word())
                 ->setDescription($faker->text())
-                ->setDifficultyLevel($faker->randomElement(['beginner', 'intermediate', 'advanced', 'expert']))
                 ->setVideoUrl('https://www.youtube.com/watch?v=jfKfPfyJRdk')
                 ->setMasterclass($masterclasses[array_rand($masterclasses)])
                 ->setMasterclassOrder($faker->numberBetween(1, 100))
@@ -204,7 +208,7 @@ class AppFixtures extends Fixture
             $rating = new Rating();
             $rating
                 ->setAuthor($users[array_rand($users)])
-                ->setLesson($lessons[array_rand($lessons)])
+                ->setMasterclass($masterclasses[array_rand($masterclasses)])
                 ->setValue($faker->randomFloat(1, 0, 5));
             $manager->persist($rating);
         }

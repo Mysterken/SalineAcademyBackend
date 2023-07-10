@@ -26,9 +26,6 @@ class Lesson implements EntityTimestampInterface
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $difficultyLevel = null;
-
     #[ORM\Column(length: 255)]
     private ?string $videoUrl = null;
 
@@ -48,13 +45,9 @@ class Lesson implements EntityTimestampInterface
     #[ORM\OneToMany(mappedBy: 'lesson', targetEntity: Task::class)]
     private Collection $tasks;
 
-    #[ORM\OneToMany(mappedBy: 'lesson', targetEntity: Rating::class)]
-    private Collection $ratings;
-
     public function __construct()
     {
         $this->tasks = new ArrayCollection();
-        $this->ratings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -82,18 +75,6 @@ class Lesson implements EntityTimestampInterface
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    public function getDifficultyLevel(): ?string
-    {
-        return $this->difficultyLevel;
-    }
-
-    public function setDifficultyLevel(?string $difficultyLevel): static
-    {
-        $this->difficultyLevel = $difficultyLevel;
 
         return $this;
     }
@@ -182,36 +163,6 @@ class Lesson implements EntityTimestampInterface
             // set the owning side to null (unless already changed)
             if ($task->getLesson() === $this) {
                 $task->setLesson(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Rating>
-     */
-    public function getRatings(): Collection
-    {
-        return $this->ratings;
-    }
-
-    public function addRating(Rating $rating): static
-    {
-        if (!$this->ratings->contains($rating)) {
-            $this->ratings->add($rating);
-            $rating->setLesson($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRating(Rating $rating): static
-    {
-        if ($this->ratings->removeElement($rating)) {
-            // set the owning side to null (unless already changed)
-            if ($rating->getLesson() === $this) {
-                $rating->setLesson(null);
             }
         }
 

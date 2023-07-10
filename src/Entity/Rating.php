@@ -19,12 +19,12 @@ class Rating
     #[ORM\JoinColumn(nullable: false)]
     private ?User $author = null;
 
-    #[ORM\ManyToOne(inversedBy: 'ratings')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Lesson $lesson = null;
-
     #[ORM\Column]
     private ?float $value = null;
+
+    #[ORM\ManyToOne(inversedBy: 'ratings')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Masterclass $masterclass = null;
 
     public function getId(): ?int
     {
@@ -43,18 +43,6 @@ class Rating
         return $this;
     }
 
-    public function getLesson(): ?Lesson
-    {
-        return $this->lesson;
-    }
-
-    public function setLesson(?Lesson $lesson): static
-    {
-        $this->lesson = $lesson;
-
-        return $this;
-    }
-
     public function getValue(): ?float
     {
         return $this->value;
@@ -63,6 +51,18 @@ class Rating
     public function setValue(float $value): static
     {
         $this->value = $value;
+
+        return $this;
+    }
+
+    public function getMasterclass(): ?Masterclass
+    {
+        return $this->masterclass;
+    }
+
+    public function setMasterclass(?Masterclass $masterclass): static
+    {
+        $this->masterclass = $masterclass;
 
         return $this;
     }
