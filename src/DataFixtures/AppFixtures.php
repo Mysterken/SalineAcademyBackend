@@ -35,9 +35,18 @@ class AppFixtures extends Fixture
         ]);
         $passwordHasher = $passwordHasher->getPasswordHasher(User::class);
 
-        function randomPic($size = 200): string
+        $page = 1;
+        $listOfPhotosIds = [];
+        while ($res = json_decode(file_get_contents("https://picsum.photos/v2/list?page=$page&limit=100"), true)) {
+            foreach ($res as $pic) {
+                $listOfPhotosIds[] = $pic['id'];
+            }
+            $page++;
+        }
+
+        function randomPic(array $listOfPhotosIds, int $size = 200): string
         {
-            return 'https://picsum.photos/id/' . random_int(0, 1084) . '/' .  $size;
+            return 'https://picsum.photos/id/' . array_rand($listOfPhotosIds) . '/' . $size;
         }
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
@@ -49,7 +58,7 @@ class AppFixtures extends Fixture
                 ->setLastName($faker->lastName())
                 ->setUsername($faker->userName())
                 ->setBiography($faker->text())
-                ->setProfilePicture(randomPic(200))
+                ->setProfilePicture(randomPic($listOfPhotosIds, 200))
                 ->setCreatedAt(DateTimeImmutable::createFromMutable($faker->dateTime()))
                 ->setUpdatedAt($faker->dateTime());
             $manager->persist($user);
@@ -63,7 +72,7 @@ class AppFixtures extends Fixture
             $masterclass
                 ->setTitle($faker->word())
                 ->setDescription($faker->text())
-                ->setThumbnailUrl(randomPic(200))
+                ->setThumbnailUrl(randomPic($listOfPhotosIds, 200))
                 ->setAuthor($users[array_rand($users)])
                 ->setPrice((string)$faker->numberBetween(1, 100))
                 ->setDifficultyLevel($faker->randomElement([
@@ -111,7 +120,7 @@ class AppFixtures extends Fixture
                 ->setName($faker->word())
                 ->setDescription($faker->text())
                 ->setPoints($faker->numberBetween(1, 100))
-                ->setImageUrl(randomPic(50));
+                ->setImageUrl(randomPic($listOfPhotosIds, 50));
             $manager->persist($achievement);
             $manager->flush();
         }
@@ -129,7 +138,7 @@ class AppFixtures extends Fixture
             $badge
                 ->setName($faker->word())
                 ->setDescription($faker->text())
-                ->setImageUrl(randomPic(50));
+                ->setImageUrl(randomPic($listOfPhotosIds, 50));
             $manager->persist($badge);
             $manager->flush();
         }
