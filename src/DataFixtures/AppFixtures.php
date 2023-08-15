@@ -59,7 +59,7 @@ class AppFixtures extends Fixture
                 ->setUsername($faker->userName())
                 ->setBiography($faker->text())
                 ->setProfilePicture(randomPic($listOfPhotosIds, 200))
-                ->setCreatedAt(DateTimeImmutable::createFromMutable($faker->dateTime()))
+                ->setCreatedAt()
                 ->setUpdatedAt($faker->dateTime());
             $manager->persist($user);
             $manager->flush();
@@ -81,7 +81,7 @@ class AppFixtures extends Fixture
                     Masterclass::DIFFICULTY_LEVEL_ADVANCED,
                     Masterclass::DIFFICULTY_LEVEL_EXPERT
                 ]))
-                ->setCreatedAt(DateTimeImmutable::createFromMutable($faker->dateTime()))
+                ->setCreatedAt()
                 ->setUpdatedAt($faker->dateTime());
             $manager->persist($masterclass);
             $manager->flush();
@@ -106,7 +106,7 @@ class AppFixtures extends Fixture
                 ->setVideoUrl('https://www.youtube.com/watch?v=jfKfPfyJRdk')
                 ->setMasterclass($masterclasses[array_rand($masterclasses)])
                 ->setMasterclassOrder($faker->numberBetween(1, 100))
-                ->setCreatedAt(DateTimeImmutable::createFromMutable($faker->dateTime()))
+                ->setCreatedAt()
                 ->setUpdatedAt($faker->dateTime());
             $manager->persist($lesson);
             $manager->flush();
@@ -155,7 +155,7 @@ class AppFixtures extends Fixture
             $category = new Category();
             $category
                 ->setName($faker->word())
-                ->setCreatedAt(DateTimeImmutable::createFromMutable($faker->dateTime()))
+                ->setCreatedAt()
                 ->setUpdatedAt($faker->dateTime());
             $manager->persist($category);
             $manager->flush();

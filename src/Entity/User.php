@@ -12,8 +12,11 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityTimestampInterface
 {
@@ -23,6 +26,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\Email(message: 'The email {{ value }} is not a valid email.')]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -35,18 +39,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('masterclass:list')]
     private ?string $username = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups('masterclass:list')]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups('masterclass:list')]
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $biography = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(message: 'The url {{ value }} is not a valid url')]
     private ?string $profilePicture = null;
 
     #[ORM\Column]
@@ -75,6 +83,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
 
     #[ORM\ManyToMany(targetEntity: Achievement::class, inversedBy: 'users')]
     private Collection $achievements;
+
+    private ?int $level = null;
 
     public function __construct()
     {
@@ -222,9 +232,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
         return $this->createdAt;
     }
 
-    public function setCreatedAt(DateTimeImmutable $createdAt): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): static
     {
-        $this->createdAt = $createdAt;
+        $this->createdAt = new DateTimeImmutable();
 
         return $this;
     }
@@ -437,5 +448,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
         $this->achievements->removeElement($achievement);
 
         return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getLevel(): ?int
+    {
+        if ($this->level === null) {
+            $this->level = $this->calculateLevel();
+            $this->setLevel($this->level);
+        }
+        return $this->level;
+    }
+
+    /**
+     * @param int|null $level
+     * @return User
+     */
+    public function setLevel(?int $level): User
+    {
+        $this->level = $level;
+        return $this;
+    }
+
+    private function calculateLevel(): int
+    {
+        $levelConstant = 50;
+        $totalPoints = 0;
+
+        /** @var Point $point */
+        foreach ($this->points as $point) {
+            $totalPoints += $point->getAmount();
+        }
+
+        return (int)floor($levelConstant * sqrt($totalPoints));
     }
 }

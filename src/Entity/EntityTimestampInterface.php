@@ -9,7 +9,7 @@ interface EntityTimestampInterface
 {
     public function getCreatedAt(): ?DateTimeImmutable;
 
-    public function setCreatedAt(DateTimeImmutable $createdAt): static;
+    public function setCreatedAt(): static;
 
     public function getUpdatedAt(): ?DateTimeInterface;
 
