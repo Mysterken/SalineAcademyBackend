@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use App\Repository\MasterclassRepository;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -11,9 +13,20 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MasterclassRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new GetCollection(
+            uriTemplate: '/masterclasses',
+            normalizationContext: ['groups' => ['masterclass:list']],
+            name: 'get_masterclass_list'
+        ),
+        new Post()
+    ],
+)]
 class Masterclass implements EntityTimestampInterface
 {
     const DIFFICULTY_LEVEL_BEGINNER = 1;
@@ -24,22 +37,27 @@ class Masterclass implements EntityTimestampInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('masterclass:list')]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('masterclass:list')]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups('masterclass:list')]
     private ?string $thumbnailUrl = null;
 
     #[ORM\ManyToOne(inversedBy: 'masterclasses')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups('masterclass:list')]
     private ?User $author = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups('masterclass:list')]
     private ?string $price = null;
 
     #[ORM\Column]
@@ -55,15 +73,19 @@ class Masterclass implements EntityTimestampInterface
     private Collection $lessons;
 
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'masterclasses')]
+    #[Groups('masterclass:list')]
     private Collection $categories;
 
     #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'masterclasses')]
+    #[Groups('masterclass:list')]
     private Collection $tags;
 
     #[ORM\OneToMany(mappedBy: 'masterclass', targetEntity: Rating::class)]
+    #[Groups('masterclass:list')]
     private Collection $ratings;
 
     #[ORM\Column(nullable: false)]
+    #[Groups('masterclass:list')]
     private ?int $difficultyLevel = self::DIFFICULTY_LEVEL_INTERMEDIATE;
 
     public function __construct()
@@ -145,9 +167,10 @@ class Masterclass implements EntityTimestampInterface
         return $this->createdAt;
     }
 
-    public function setCreatedAt(DateTimeImmutable $createdAt): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): static
     {
-        $this->createdAt = $createdAt;
+        $this->createdAt = new DateTimeImmutable();
 
         return $this;
     }
