@@ -28,10 +28,10 @@ security:
             pattern: ^/api
             stateless: true
             jwt: ~
-        
-#        main:
-#            lazy: true
-#            provider: app_user_provider
+            
+            #        main:
+            #            lazy: true
+            #            provider: app_user_provider
             
             
             # activate different ways to authenticate
@@ -44,7 +44,8 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api,       roles: PUBLIC_ACCESS } // todo change to FULLY_AUTHENTICATED
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api,       roles: FULLY_AUTHENTICATED }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 
