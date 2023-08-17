@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use App\Controller\GetMasterclassRating;
 use App\Repository\MasterclassRepository;
 use DateTime;
 use DateTimeImmutable;
@@ -23,12 +25,47 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new Get(),
+        new Get(
+            uriTemplate: '/masterclasses/{id}/rating',
+            controller: GetMasterclassRating::class,
+            openapi: new Operation(
+                responses: [
+                    '200' => [
+                        'description' => 'Masterclass rating',
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'id' => [
+                                            'type' => 'integer',
+                                            'example' => 1,
+                                        ],
+                                        'averageRating' => [
+                                            'type' => 'number',
+                                            'example' => 4.5,
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                summary: 'Get masterclass rating',
+                description: 'Get masterclass rating',
+            ),
+            name: 'get_masterclass_rating',
+        ),
         new GetCollection(
             uriTemplate: '/masterclasses',
             normalizationContext: ['groups' => ['masterclass:list']],
-            name: 'get_masterclass_list'
+            name: 'get_masterclass_list',
         ),
-        new Post()
+        new Post(
+            normalizationContext: ['groups' => ['masterclass:read']],
+            denormalizationContext: ['groups' => ['masterclass:write']],
+            name: 'post_masterclass',
+        )
     ],
 )]
 #[ApiFilter(SearchFilter::class, properties: [

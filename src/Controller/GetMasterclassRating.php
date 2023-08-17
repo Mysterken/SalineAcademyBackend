@@ -7,7 +7,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route("/api/masterclasses/{id}/rating", name: "homepage")]
 class GetMasterclassRating extends AbstractController
 {
     public function __construct(
