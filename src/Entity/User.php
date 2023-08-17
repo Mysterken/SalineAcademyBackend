@@ -3,7 +3,15 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\Controller\UpdateUserPassword;
 use App\Repository\UserRepository;
+use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -17,7 +25,32 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new Put(
+            denormalizationContext: ['groups' => ['user:write']],
+            security: "is_granted('ROLE_ADMIN') or object == user",
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or object == user",
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['user:write']],
+            security: "is_granted('ROLE_ADMIN') or object == user",
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['user:list']],
+            name: 'get_user_list',
+        ),
+        new Post(),
+        new Post(
+            uriTemplate: '/users/{id}/password',
+            controller: UpdateUserPassword::class,
+            name: 'update_user_password',
+        )
+    ],
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityTimestampInterface
 {
     #[ORM\Id]
@@ -27,6 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
 
     #[ORM\Column(length: 180, unique: true)]
     #[Assert\Email(message: 'The email {{ value }} is not a valid email.')]
+    #[Groups(['user:write'])]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -39,22 +73,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:list', 'user:list', 'user:write'])]
     private ?string $username = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:list', 'user:write'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:list', 'user:write'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['user:write'])]
     private ?string $biography = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Url(message: 'The url {{ value }} is not a valid url')]
+    #[Groups(['user:write'])]
     private ?string $profilePicture = null;
 
     #[ORM\Column]
@@ -122,6 +158,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
     public function getUserIdentifier(): string
     {
         return (string)$this->email;
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array('ROLE_ADMIN', $this->getRoles());
     }
 
     /**
@@ -245,9 +286,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(DateTimeInterface $updatedAt): static
+    #[ORM\PreUpdate]
+    public function setUpdatedAt(): static
     {
-        $this->updatedAt = $updatedAt;
+        $this->updatedAt = new DateTime();
 
         return $this;
     }

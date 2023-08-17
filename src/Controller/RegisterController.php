@@ -38,7 +38,6 @@ class RegisterController extends AbstractController
         }
 
         $passwordHasher = $passwordHasher->getPasswordHasher(User::class);
-        $dateNow = new DateTimeImmutable();
 
         $user = new User();
         $user
@@ -50,7 +49,7 @@ class RegisterController extends AbstractController
             ->setBiography($content['biography'] ?? null)
             ->setProfilePicture($content['profilePicture'] ?? null)
             ->setCreatedAt()
-            ->setUpdatedAt($dateNow);
+            ->setUpdatedAt();
 
         $errors = $validator->validate($user);
         if (count($errors) > 0) {

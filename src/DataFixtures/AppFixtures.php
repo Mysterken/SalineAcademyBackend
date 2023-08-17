@@ -60,7 +60,7 @@ class AppFixtures extends Fixture
                 ->setBiography($faker->text())
                 ->setProfilePicture(randomPic($listOfPhotosIds, 200))
                 ->setCreatedAt()
-                ->setUpdatedAt($faker->dateTime());
+                ->setUpdatedAt();
             $manager->persist($user);
             $manager->flush();
         }
@@ -82,7 +82,7 @@ class AppFixtures extends Fixture
                     Masterclass::DIFFICULTY_LEVEL_EXPERT
                 ]))
                 ->setCreatedAt()
-                ->setUpdatedAt($faker->dateTime());
+                ->setUpdatedAt();
             $manager->persist($masterclass);
             $manager->flush();
         }
@@ -107,7 +107,7 @@ class AppFixtures extends Fixture
                 ->setMasterclass($masterclasses[array_rand($masterclasses)])
                 ->setMasterclassOrder($faker->numberBetween(1, 100))
                 ->setCreatedAt()
-                ->setUpdatedAt($faker->dateTime());
+                ->setUpdatedAt();
             $manager->persist($lesson);
             $manager->flush();
         }
@@ -156,7 +156,7 @@ class AppFixtures extends Fixture
             $category
                 ->setName($faker->word())
                 ->setCreatedAt()
-                ->setUpdatedAt($faker->dateTime());
+                ->setUpdatedAt();
             $manager->persist($category);
             $manager->flush();
         }

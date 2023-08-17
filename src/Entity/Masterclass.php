@@ -2,11 +2,15 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Repository\MasterclassRepository;
+use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -27,6 +31,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Post()
     ],
 )]
+#[ApiFilter(SearchFilter::class, properties: [
+    'title' => 'partial',
+    'author.username' => 'partial',
+    'categories.id' => 'exact',
+    'tags.id' => 'exact',
+    'difficultyLevel' => 'exact'
+])]
+#[ApiFilter(RangeFilter::class, properties: ['price'])] // todo add custom rating filter
 class Masterclass implements EntityTimestampInterface
 {
     const DIFFICULTY_LEVEL_BEGINNER = 1;
@@ -180,9 +192,10 @@ class Masterclass implements EntityTimestampInterface
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(DateTimeInterface $updatedAt): static
+    #[ORM\PreUpdate]
+    public function setUpdatedAt(): static
     {
-        $this->updatedAt = $updatedAt;
+        $this->updatedAt = new DateTime();
 
         return $this;
     }
