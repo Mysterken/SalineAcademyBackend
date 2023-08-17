@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
-//#[Route("/api/users/{id}/password", name: "register", requirements: ['id' => '\d+'], methods: ["POST"])]
 #[AsController]
 class UpdateUserPassword extends AbstractController
 {
