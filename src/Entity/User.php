@@ -9,8 +9,11 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Controller\UpdateUserPassword;
 use App\Repository\UserRepository;
+use ArrayObject;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -47,6 +50,27 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(
             uriTemplate: '/users/{id}/password',
             controller: UpdateUserPassword::class,
+            openapi: new Operation(
+                requestBody: new RequestBody(
+                    content: new ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'oldPassword' => [
+                                        'type' => 'string',
+                                        'example' => '123456',
+                                    ],
+                                    'newPassword' => [
+                                        'type' => 'string',
+                                        'example' => '987654',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ])
+                ),
+            ),
             name: 'update_user_password',
         )
     ],
