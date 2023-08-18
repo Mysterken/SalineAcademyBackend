@@ -14,6 +14,7 @@ use App\Entity\Rating;
 use App\Entity\Tag;
 use App\Entity\Task;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -69,7 +70,19 @@ class AppFixtures extends Fixture
             $manager->flush();
         }
 
-        $users = $manager->getRepository(User::class)->findAll();
+        /** @var UserRepository $userRepository */
+        $userRepository = $manager->getRepository(User::class);
+        $users = $userRepository->findAll();
+        $teachers = $userRepository->findByRoles(['ROLE_TEACHER']);
+
+        // Create 2 teachers if there are none
+        if (count($teachers) < 2) {
+            $teachers[0] = $users[0]->addRole('ROLE_TEACHER');
+            $teachers[1] = $users[1]->addRole('ROLE_TEACHER');
+            $manager->persist($teachers[0]);
+            $manager->persist($teachers[1]);
+            $manager->flush();
+        }
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
             $masterclass = new Masterclass();
@@ -77,7 +90,7 @@ class AppFixtures extends Fixture
                 ->setTitle($faker->word())
                 ->setDescription($faker->text())
                 ->setThumbnailUrl(randomPic($listOfPhotosIds, 200))
-                ->setAuthor($users[array_rand($users)])
+                ->setAuthor($teachers[array_rand($teachers)])
                 ->setPrice((string)$faker->numberBetween(1, 100))
                 ->setDifficultyLevel($faker->randomElement([
                     Masterclass::DIFFICULTY_LEVEL_BEGINNER,
