@@ -8,12 +8,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route("/api/register", name: "register", methods: ["POST"])]
-class RegisterController extends AbstractController
+#[AsController]
+class RegisterUser extends AbstractController
 {
     const REQUIRED_FIELDS = ['username', 'email', 'password'];
 
@@ -42,14 +43,13 @@ class RegisterController extends AbstractController
         $user = new User();
         $user
             ->setEmail($content['email'])
+            ->setRoles(['ROLE_USER'])
             ->setPassword($passwordHasher->hash($content['password']))
+            ->setUsername($content['username'])
             ->setFirstName($content['firstName'] ?? null)
             ->setLastName($content['lastName'] ?? null)
-            ->setUsername($content['username'])
             ->setBiography($content['biography'] ?? null)
-            ->setProfilePicture($content['profilePicture'] ?? null)
-            ->setCreatedAt()
-            ->setUpdatedAt();
+            ->setProfilePicture($content['profilePicture'] ?? null);
 
         $errors = $validator->validate($user);
         if (count($errors) > 0) {

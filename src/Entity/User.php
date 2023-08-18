@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
+use App\Controller\RegisterUser;
 use App\Controller\UpdateUserPassword;
 use App\Repository\UserRepository;
 use ArrayObject;
@@ -30,27 +31,74 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
-        new Get(),
+        new Get(
+            normalizationContext: ['groups' => ['user:read']],
+        ),
         new Put(
             denormalizationContext: ['groups' => ['user:write']],
-            security: "is_granted('ROLE_ADMIN') or object == user",
         ),
-        new Delete(
-            security: "is_granted('ROLE_ADMIN') or object == user",
-        ),
+        new Delete(),
         new Patch(
             denormalizationContext: ['groups' => ['user:write']],
-            security: "is_granted('ROLE_ADMIN') or object == user",
         ),
         new GetCollection(
             normalizationContext: ['groups' => ['user:list']],
-            name: 'get_user_list',
+            security: 'is_granted("ROLE_ADMIN")',
         ),
-        new Post(),
+        new Post(
+            uriTemplate: '/register',
+            controller: RegisterUser::class,
+            openapi: new Operation(
+                summary: 'Register a new user',
+                description: 'Register a new user',
+                requestBody: new RequestBody(
+                    content: new ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'email' => [
+                                        'type' => 'string',
+                                        'example' => 'john@mail.com',
+                                    ],
+                                    'password' => [
+                                        'type' => 'string',
+                                        'example' => '123456',
+                                    ],
+                                    'username' => [
+                                        'type' => 'string',
+                                        'example' => 'johnDoe123',
+                                    ],
+                                    'firstName' => [
+                                        'type' => 'string',
+                                        'example' => 'John',
+                                    ],
+                                    'lastName' => [
+                                        'type' => 'string',
+                                        'example' => 'Doe',
+                                    ],
+                                    'biography' => [
+                                        'type' => 'string',
+                                        'example' => 'I am a web developer',
+                                    ],
+                                    'profilePicture' => [
+                                        'type' => 'string',
+                                        'example' => 'https://www.example.com/profile-picture.jpg',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+            name: 'register_user',
+        ),
         new Post(
             uriTemplate: '/users/{id}/password',
             controller: UpdateUserPassword::class,
             openapi: new Operation(
+                summary: 'Update user password',
+                description: 'Update user password',
                 requestBody: new RequestBody(
                     content: new ArrayObject([
                         'application/json' => [
@@ -68,23 +116,25 @@ use Symfony\Component\Validator\Constraints as Assert;
                                 ],
                             ],
                         ],
-                    ])
+                    ]),
                 ),
             ),
             name: 'update_user_password',
         )
     ],
+    security: 'is_granted("ROLE_ADMIN") or object == user',
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityTimestampInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read', 'user:list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
     #[Assert\Email(message: 'The email {{ value }} is not a valid email.')]
-    #[Groups(['user:write'])]
+    #[Groups(['user:read', 'user:list', 'user:write'])]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -94,30 +144,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
      * @var ?string The hashed password
      */
     #[ORM\Column]
+    #[Groups(['user:write'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['masterclass:list', 'user:list', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'user:list', 'masterclass:list'])]
     private ?string $username = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['masterclass:list', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'masterclass:list'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['masterclass:list', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'masterclass:list'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['user:write'])]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $biography = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Url(message: 'The url {{ value }} is not a valid url')]
-    #[Groups(['user:write'])]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $profilePicture = null;
 
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -139,11 +191,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
     private Collection $ratings;
 
     #[ORM\ManyToMany(targetEntity: Badge::class, inversedBy: 'users')]
+    #[Groups(['user:read'])]
     private Collection $badges;
 
     #[ORM\ManyToMany(targetEntity: Achievement::class, inversedBy: 'users')]
+    #[Groups(['user:read'])]
     private Collection $achievements;
 
+    #[Groups(['user:read'])]
     private ?int $level = null;
 
     public function __construct()
@@ -204,6 +259,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function addRole(string $role): static
+    {
+        $this->roles[] = $role;
+
+        return $this;
+    }
+
+    #[ORM\PreUpdate]
+    public function removeDuplicateRoles(): static
+    {
+        $this->roles = array_unique($this->roles);
 
         return $this;
     }
@@ -310,6 +380,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
         return $this->updatedAt;
     }
 
+    #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function setUpdatedAt(): static
     {
