@@ -522,23 +522,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
     public function getLevel(): ?int
     {
         if ($this->level === null) {
-            $this->level = $this->calculateLevel();
-            $this->setLevel($this->level);
+            $this->setLevel();
         }
         return $this->level;
     }
 
     /**
-     * @param int|null $level
      * @return User
      */
-    public function setLevel(?int $level): User
-    {
-        $this->level = $level;
-        return $this;
-    }
-
-    private function calculateLevel(): int
+    public function setLevel(): User
     {
         $levelConstant = 50;
         $totalPoints = 0;
@@ -548,6 +540,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
             $totalPoints += $point->getAmount();
         }
 
-        return (int)floor($levelConstant * sqrt($totalPoints));
+        $this->level = (int)floor($levelConstant * sqrt($totalPoints));
+        return $this;
     }
 }
