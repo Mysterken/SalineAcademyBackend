@@ -50,9 +50,13 @@ class AppFixtures extends Fixture
         }
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
+
+            $roles = rand(0,5) ? ['ROLE_USER'] : ['ROLE_USER', 'ROLE_TEACHER'];
+
             $user = new User();
             $user
                 ->setEmail($faker->email())
+                ->setRoles($roles)
                 ->setPassword($passwordHasher->hash($faker->password()))
                 ->setFirstName($faker->firstName())
                 ->setLastName($faker->lastName())
