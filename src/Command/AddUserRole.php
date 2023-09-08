@@ -26,7 +26,7 @@ class AddUserRole extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('id', InputArgument::REQUIRED, 'The username of the user.')
+            ->addArgument('id', InputArgument::REQUIRED, 'The id of the user.')
             ->addArgument('role', InputArgument::REQUIRED, 'The role to add to the user.');
     }
 
