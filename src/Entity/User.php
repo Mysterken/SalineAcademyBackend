@@ -32,12 +32,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new Get(
-            normalizationContext: ['groups' => ['user:read']],
+            security: 'is_granted("ROLE_ADMIN") or object == user',
         ),
         new Put(
             denormalizationContext: ['groups' => ['user:write']],
         ),
-        new Delete(),
+        new Delete(
+            security: 'is_granted("ROLE_ADMIN")',
+        ),
         new Patch(
             denormalizationContext: ['groups' => ['user:write']],
         ),
@@ -91,6 +93,7 @@ use Symfony\Component\Validator\Constraints as Assert;
                     ]),
                 ),
             ),
+            security: 'is_granted("PUBLIC_ACCESS")',
             name: 'register_user',
         ),
         new Post(
@@ -122,6 +125,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             name: 'update_user_password',
         )
     ],
+    normalizationContext: ['groups' => ['user:read']],
     security: 'is_granted("ROLE_ADMIN") or object == user',
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityTimestampInterface
@@ -175,7 +179,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, EntityT
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?DateTimeInterface $updatedAt = null;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Enrollment::class)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Enrollment::class, orphanRemoval: true)]
     private Collection $enrollments;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Point::class, orphanRemoval: true)]

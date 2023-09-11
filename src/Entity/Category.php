@@ -3,6 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\CategoryRepository;
 use DateTime;
 use DateTimeImmutable;
@@ -11,23 +17,46 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Get(
+            security: 'is_granted("PUBLIC_ACCESS")',
+        ),
+        new Put(),
+        new Delete(),
+        new Patch(),
+        new GetCollection(
+            normalizationContext: ['groups' => ['category:list']],
+            security: 'is_granted("PUBLIC_ACCESS")',
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['category:write']],
+        ),
+    ],
+    normalizationContext: ['groups' => ['category:read']],
+    security: 'is_granted("ROLE_ADMIN")',
+)]
 class Category implements EntityTimestampInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['category:read', 'category:list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['category:read', 'category:list', 'category:write'])]
     private ?string $name = null;
 
     #[ORM\Column]
+    #[Groups(['category:read'])]
     private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['category:read'])]
     private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToMany(targetEntity: Masterclass::class, mappedBy: 'categories')]

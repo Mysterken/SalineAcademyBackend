@@ -3,6 +3,13 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\EventListener\LessonListener;
 use App\Repository\LessonRepository;
 use DateTime;
 use DateTimeImmutable;
@@ -11,30 +18,66 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: LessonRepository::class)]
-#[ApiResource]
+#[ORM\EntityListeners([LessonListener::class])]
+#[ORM\HasLifecycleCallbacks]
+#[ApiResource(
+    operations: [
+        new Get(
+            security: 'is_granted("PUBLIC_ACCESS")'
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['lesson:update']],
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_TEACHER") and object.getMasterclass().getAuthor() == user)'
+        ),
+        new Delete(
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_TEACHER") and object.getMasterclass().getAuthor() == user)'
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['lesson:update']],
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_TEACHER") and object.getMasterclass().getAuthor() == user)'
+        ),
+        new GetCollection(),
+        new Post(
+            denormalizationContext: ['groups' => ['lesson:write']],
+            security: 'is_granted("ROLE_ADMIN") or is_granted("ROLE_TEACHER")'
+        ),
+    ],
+    normalizationContext: ['groups' => ['lesson:read']],
+    security: 'is_granted("ROLE_ADMIN")',
+)]
 class Lesson implements EntityTimestampInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['lesson:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['lesson:read', 'lesson:write', 'lesson:update'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['lesson:read', 'lesson:write', 'lesson:update'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\Url(message: 'The url {{ value }} is not a valid url')]
+    #[Groups(['lesson:read', 'lesson:write', 'lesson:update'])]
     private ?string $videoUrl = null;
 
     #[ORM\Column]
+    #[Assert\GreaterThan(0)]
+    #[Groups(['lesson:read', 'lesson:write', 'lesson:update'])]
     private ?int $masterclassOrder = null;
 
     #[ORM\ManyToOne(inversedBy: 'lessons')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['lesson:read', 'lesson:write'])]
     private ?Masterclass $masterclass = null;
 
     #[ORM\Column]
@@ -44,6 +87,7 @@ class Lesson implements EntityTimestampInterface
     private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\OneToMany(mappedBy: 'lesson', targetEntity: Task::class)]
+    #[Groups(['lesson:read', 'lesson:write'])]
     private Collection $tasks;
 
     public function __construct()
@@ -134,6 +178,7 @@ class Lesson implements EntityTimestampInterface
         return $this->updatedAt;
     }
 
+    #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function setUpdatedAt(): static
     {

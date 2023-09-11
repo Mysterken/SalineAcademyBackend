@@ -22,3 +22,21 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\EventListener\EnrollmentListener:
+        tags: [ doctrine.orm.entity_listener ]
+
+    App\EventListener\LessonListener:
+        tags: [ doctrine.orm.entity_listener ]
+    
+    App\EventListener\MasterclassListener:
+        tags: [ doctrine.orm.entity_listener ]
+
+    App\EventListener\ProgressListener:
+        tags: [ doctrine.orm.entity_listener ]
+    
+    App\EventListener\RatingListener:
+        tags: [ doctrine.orm.entity_listener ]
+
+    App\EventListener\TaskListener:
+        tags: [ doctrine.orm.entity_listener ]

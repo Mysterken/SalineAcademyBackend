@@ -6,11 +6,13 @@ use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\OpenApi\Model\Operation;
-use App\Controller\GetMasterclassRating;
+use ApiPlatform\Metadata\Put;
+use App\EventListener\MasterclassListener;
 use App\Repository\MasterclassRepository;
 use DateTime;
 use DateTimeImmutable;
@@ -20,60 +22,44 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MasterclassRepository::class)]
+#[ORM\EntityListeners([MasterclassListener::class])]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
-        new Get(),
         new Get(
-            uriTemplate: '/masterclasses/{id}/rating',
-            controller: GetMasterclassRating::class,
-            openapi: new Operation(
-                responses: [
-                    '200' => [
-                        'description' => 'Masterclass rating',
-                        'content' => [
-                            'application/json' => [
-                                'schema' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'id' => [
-                                            'type' => 'integer',
-                                            'example' => 1,
-                                        ],
-                                        'averageRating' => [
-                                            'type' => 'number',
-                                            'example' => 4.5,
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-                summary: 'Get masterclass rating',
-                description: 'Get masterclass rating',
-            ),
-            name: 'get_masterclass_rating',
+            security: 'is_granted("PUBLIC_ACCESS")',
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['masterclass:write']],
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_TEACHER") and object.getAuthor() == user)',
+        ),
+        new Delete(
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_TEACHER") and object.getAuthor() == user)',
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['masterclass:write']],
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_TEACHER") and object.getAuthor() == user)',
         ),
         new GetCollection(
-            uriTemplate: '/masterclasses',
             normalizationContext: ['groups' => ['masterclass:list']],
-            name: 'get_masterclass_list',
+            security: 'is_granted("PUBLIC_ACCESS")',
         ),
         new Post(
-            normalizationContext: ['groups' => ['masterclass:read']],
             denormalizationContext: ['groups' => ['masterclass:write']],
-            name: 'post_masterclass',
-        )
+            security: 'is_granted("ROLE_ADMIN") or is_granted("ROLE_TEACHER")',
+        ),
     ],
+    normalizationContext: ['groups' => ['masterclass:read']],
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'title' => 'partial',
     'author.username' => 'partial',
     'categories.id' => 'exact',
     'tags.id' => 'exact',
-    'difficultyLevel' => 'exact'
+    'difficultyLevel' => 'exact',
 ])]
 #[ApiFilter(RangeFilter::class, properties: ['price'])] // todo add custom rating filter
 class Masterclass implements EntityTimestampInterface
@@ -86,56 +72,65 @@ class Masterclass implements EntityTimestampInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:read', 'masterclass:list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:read', 'masterclass:write', 'masterclass:list'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['masterclass:read', 'masterclass:write', 'masterclass:list'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups('masterclass:list')]
+    #[Assert\Url(message: 'The url {{ value }} is not a valid url')]
+    #[Groups(['masterclass:read', 'masterclass:write', 'masterclass:list'])]
     private ?string $thumbnailUrl = null;
 
     #[ORM\ManyToOne(inversedBy: 'masterclasses')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:read', 'masterclass:list'])]
     private ?User $author = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:read', 'masterclass:write', 'masterclass:list'])]
     private ?string $price = null;
 
     #[ORM\Column]
+    #[Groups(['masterclass:read'])]
     private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['masterclass:read'])]
     private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\OneToMany(mappedBy: 'masterclass', targetEntity: Enrollment::class)]
     private Collection $enrollments;
 
-    #[ORM\OneToMany(mappedBy: 'masterclass', targetEntity: Lesson::class)]
+    #[ORM\OneToMany(mappedBy: 'masterclass', targetEntity: Lesson::class, orphanRemoval: true)]
+    #[Groups(['masterclass:read'])]
     private Collection $lessons;
 
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'masterclasses')]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:read', 'masterclass:write', 'masterclass:list'])]
     private Collection $categories;
 
     #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'masterclasses')]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:read', 'masterclass:write', 'masterclass:list'])]
     private Collection $tags;
 
     #[ORM\OneToMany(mappedBy: 'masterclass', targetEntity: Rating::class)]
-    #[Groups('masterclass:list')]
+    #[Groups(['masterclass:read', 'masterclass:list'])]
     private Collection $ratings;
 
     #[ORM\Column(nullable: false)]
-    #[Groups('masterclass:list')]
+    #[Assert\Choice(callback: 'getDifficultyLevelList', message: 'Choose a valid difficulty level')]
+    #[Groups(['masterclass:read', 'masterclass:write', 'masterclass:list'])]
     private ?int $difficultyLevel = self::DIFFICULTY_LEVEL_INTERMEDIATE;
+
+    #[Groups(['masterclass:read', 'masterclass:list'])]
+    private ?float $averageRating = null;
 
     public function __construct()
     {
@@ -144,6 +139,16 @@ class Masterclass implements EntityTimestampInterface
         $this->categories = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->ratings = new ArrayCollection();
+    }
+
+    public static function getDifficultyLevelList(): array
+    {
+        return [
+            self::DIFFICULTY_LEVEL_BEGINNER,
+            self::DIFFICULTY_LEVEL_INTERMEDIATE,
+            self::DIFFICULTY_LEVEL_ADVANCED,
+            self::DIFFICULTY_LEVEL_EXPERT,
+        ];
     }
 
     public function getId(): ?int
@@ -229,6 +234,7 @@ class Masterclass implements EntityTimestampInterface
         return $this->updatedAt;
     }
 
+    #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function setUpdatedAt(): static
     {
@@ -370,6 +376,30 @@ class Masterclass implements EntityTimestampInterface
             if ($rating->getMasterclass() === $this) {
                 $rating->setMasterclass(null);
             }
+        }
+
+        return $this;
+    }
+
+    public function getAverageRating(): ?float
+    {
+        if ($this->averageRating === null) {
+            $this->setAverageRating();
+        }
+        return $this->averageRating;
+    }
+
+    public function setAverageRating(): static
+    {
+        $averageRating = 0;
+
+        if (count($this->ratings) === 0) {
+            $this->averageRating = null;
+        } else {
+            foreach ($this->ratings as $rating) {
+                $averageRating += $rating->getValue();
+            }
+            $this->averageRating = number_format($averageRating / count($this->ratings), 2);
         }
 
         return $this;

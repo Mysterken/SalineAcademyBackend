@@ -52,7 +52,7 @@ class AppFixtures extends Fixture
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
 
-            $roles = rand(0,5) ? ['ROLE_USER'] : ['ROLE_USER', 'ROLE_TEACHER'];
+            $roles = rand(0, 5) ? ['ROLE_USER'] : ['ROLE_USER', 'ROLE_TEACHER'];
 
             $user = new User();
             $user
@@ -92,12 +92,7 @@ class AppFixtures extends Fixture
                 ->setThumbnailUrl(randomPic($listOfPhotosIds, 200))
                 ->setAuthor($teachers[array_rand($teachers)])
                 ->setPrice((string)$faker->numberBetween(1, 100))
-                ->setDifficultyLevel($faker->randomElement([
-                    Masterclass::DIFFICULTY_LEVEL_BEGINNER,
-                    Masterclass::DIFFICULTY_LEVEL_INTERMEDIATE,
-                    Masterclass::DIFFICULTY_LEVEL_ADVANCED,
-                    Masterclass::DIFFICULTY_LEVEL_EXPERT
-                ]))
+                ->setDifficultyLevel($faker->randomElement(Masterclass::getDifficultyLevelList()))
                 ->setCreatedAt()
                 ->setUpdatedAt();
             $manager->persist($masterclass);
@@ -111,7 +106,7 @@ class AppFixtures extends Fixture
             $enrollment
                 ->setUser($users[array_rand($users)])
                 ->setMasterclass($masterclasses[array_rand($masterclasses)])
-                ->setEnrollmentDate(DateTimeImmutable::createFromMutable($faker->dateTime()));
+                ->setEnrollmentDate();
             $manager->persist($enrollment);
         }
 
@@ -223,7 +218,6 @@ class AppFixtures extends Fixture
             $progress = new Progress();
             $progress
                 ->setUser($users[array_rand($users)])
-                ->setMasterclass($masterclasses[array_rand($masterclasses)])
                 ->setLesson($lessons[array_rand($lessons)])
                 ->setPoints($faker->numberBetween(1, 100))
                 ->setCompletionDate($faker->dateTime());
