@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:add-user-role',
     description: 'Adds a role to a user.',
 )]
-class AddUserRole extends Command
+class AddUserRoleCommand extends Command
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
