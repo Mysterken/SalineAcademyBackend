@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManager;
 use Exception;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
@@ -16,6 +17,7 @@ abstract class AbstractApiControllerTest extends ApiTestCase
     protected string $apiUrl;
     private Client $client;
     private EntityManager $entityManager;
+    private UserPasswordHasher $userPasswordHasher;
     private User $testUser;
 
     abstract public function test(): void;
@@ -27,6 +29,7 @@ abstract class AbstractApiControllerTest extends ApiTestCase
     {
         $this->client = static::createClient();
         $this->entityManager = self::$kernel->getContainer()->get('doctrine')->getManager();
+        $this->userPasswordHasher = self::$kernel->getContainer()->get('test.password_hasher');
     }
 
     protected function getApiUrl(): string
@@ -68,6 +71,11 @@ abstract class AbstractApiControllerTest extends ApiTestCase
     protected function getEntityManager(): EntityManager
     {
         return $this->entityManager;
+    }
+
+    protected function getUserPasswordHasher(): UserPasswordHasher
+    {
+        return $this->userPasswordHasher;
     }
 
     /**
