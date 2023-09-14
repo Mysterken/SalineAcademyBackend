@@ -12,6 +12,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher;
 
 class CreateUserCommandTest extends KernelTestCase
 {
+    private Application $application;
     private ObjectManager $entityManager;
     private UserPasswordHasher $userPasswordHasher;
 
@@ -20,9 +21,7 @@ class CreateUserCommandTest extends KernelTestCase
      */
     public function testExecute(): void
     {
-        $application = new Application(self::$kernel);
-
-        $command = $application->find('app:create-user');
+        $command = $this->application->find('app:create-user');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute([
@@ -54,6 +53,7 @@ class CreateUserCommandTest extends KernelTestCase
     {
         self::bootKernel(['environment' => 'test', 'debug' => false]);
 
+        $this->application = new Application(self::$kernel);
         $this->entityManager = self::$kernel->getContainer()->get('doctrine')->getManager();
         $this->userPasswordHasher = self::$kernel->getContainer()->get('test.password_hasher');
     }
