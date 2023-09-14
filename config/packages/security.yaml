@@ -44,9 +44,7 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api,       roles: PUBLIC_ACCESS } # todo change to FULLY_AUTHENTICATED
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api,       roles: PUBLIC_ACCESS }
 
 when@test:
     security:
