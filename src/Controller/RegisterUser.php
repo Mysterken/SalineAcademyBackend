@@ -68,7 +68,7 @@ class RegisterUser extends AbstractController
 
         return $this->json([
             'status' => 'success',
-            'message' => 'User created successfully',
+            'message' => 'User successfully registered',
         ]);
     }
 }
