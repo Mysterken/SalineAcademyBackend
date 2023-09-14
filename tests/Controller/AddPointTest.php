@@ -38,8 +38,8 @@ class AddPointTest extends AbstractApiControllerTest
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains(['message' => "Added $randomAmount points to user"]);
 
-        $points = $this->getEntityManager()->getRepository(Point::class)->findBy([], ['id' => 'DESC'], 1);
-        $this->assertNotNull($points);
-        $this->assertSame($randomAmount, $points[0]->getAmount());
+        $point = $this->getEntityManager()->getRepository(Point::class)->findOneBy([], ['id' => 'DESC']);
+        $this->assertNotNull($point);
+        $this->assertSame($randomAmount, $point->getAmount());
     }
 }
