@@ -13,6 +13,11 @@ readonly class EnrollmentListener
 
     public function prePersist(Enrollment $enrollment): void
     {
-        $enrollment->setUser($this->security->getUser());
+        if (
+            $this->security->getUser() &&
+            !$enrollment->getUser()
+        ) {
+            $enrollment->setUser($this->security->getUser());
+        }
     }
 }

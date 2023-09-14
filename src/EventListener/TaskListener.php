@@ -17,7 +17,10 @@ readonly class TaskListener
      */
     public function prePersist(Task $task): void
     {
-        if ($task->getLesson()->getMasterclass()->getAuthor() !== $this->security->getUser()) {
+        if (
+            $this->security->getUser() &&
+            $task->getLesson()->getMasterclass()->getAuthor() !== $this->security->getUser()
+        ) {
             throw new Exception('You are not the author of this masterclass');
         }
     }

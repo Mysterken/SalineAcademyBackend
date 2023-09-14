@@ -14,7 +14,12 @@ readonly class MasterclassListener
 
     public function prePersist(Masterclass $masterclass): void
     {
-        $masterclass->setAuthor($this->security->getUser());
+        if (
+            $this->security->getUser() &&
+            !$masterclass->getAuthor()
+        ) {
+            $masterclass->setAuthor($this->security->getUser());
+        }
     }
 
     /**
@@ -22,7 +27,11 @@ readonly class MasterclassListener
      */
     public function preUpdate(Masterclass $masterclass): void
     {
-        if ($masterclass->getAuthor() !== $this->security->getUser()) {
+        if (
+            $this->security->getUser() &&
+            $masterclass->getAuthor() !== $this->security->getUser()  &&
+            !$this->security->isGranted('ROLE_ADMIN')
+        ) {
             throw new Exception('You are not the author of this masterclass');
         }
     }

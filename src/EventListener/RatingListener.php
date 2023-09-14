@@ -25,6 +25,11 @@ readonly class RatingListener
             throw new Exception('You have already rated this masterclass');
         }
 
-        $rating->setAuthor($this->security->getUser());
+        if (
+            $this->security->getUser() &&
+            !$rating->getAuthor()
+        ) {
+            $rating->setAuthor($this->security->getUser());
+        }
     }
 }

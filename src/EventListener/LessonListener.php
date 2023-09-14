@@ -17,8 +17,10 @@ readonly class LessonListener
      */
     public function prePersist(Lesson $lesson): void
     {
-
-        if ($lesson->getMasterclass()->getAuthor() !== $this->security->getUser()) {
+        if (
+            $this->security->getUser() !== null &&
+            $lesson->getMasterclass()->getAuthor() !== $this->security->getUser()
+        ) {
             throw new Exception('You are not the author of this masterclass');
         }
 
@@ -45,7 +47,10 @@ readonly class LessonListener
      */
     public function preUpdate(Lesson $lesson): void
     {
-        if ($lesson->getMasterclass()->getAuthor() !== $this->security->getUser()) {
+        if (
+            $this->security->getUser() &&
+            $lesson->getMasterclass()->getAuthor() !== $this->security->getUser()
+        ) {
             throw new Exception('You are not the author of this masterclass');
         }
 

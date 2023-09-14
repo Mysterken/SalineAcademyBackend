@@ -25,6 +25,11 @@ readonly class ProgressListener
             throw new Exception('You have already started this lesson');
         }
 
-        $progress->setUser($this->security->getUser());
+        if (
+            $this->security->getUser() &&
+            !$progress->getUser()
+        ) {
+            $progress->setUser($this->security->getUser());
+        }
     }
 }
