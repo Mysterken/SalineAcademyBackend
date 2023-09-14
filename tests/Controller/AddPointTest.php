@@ -10,7 +10,7 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class AddPointControllerTest extends AbstractApiControllerTest
+class AddPointTest extends AbstractApiControllerTest
 {
     protected string $apiUrl = '/api/points';
 
