@@ -1,0 +1,9 @@
+services:
+    _defaults:
+        public: true
+        autowire: true
+        autoconfigure: true
+
+    test.password_hasher:
+        class: 'Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher'
+        public: true
