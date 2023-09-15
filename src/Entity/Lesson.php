@@ -40,7 +40,9 @@ use Symfony\Component\Validator\Constraints as Assert;
             denormalizationContext: ['groups' => ['lesson:update']],
             security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_TEACHER") and object.getMasterclass().getAuthor() == user)'
         ),
-        new GetCollection(),
+        new GetCollection(
+            security: 'is_granted("PUBLIC_ACCESS")'
+        ),
         new Post(
             denormalizationContext: ['groups' => ['lesson:write']],
             security: 'is_granted("ROLE_ADMIN") or is_granted("ROLE_TEACHER")'
