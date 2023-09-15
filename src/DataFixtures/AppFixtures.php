@@ -21,6 +21,7 @@ use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker\Factory;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
@@ -49,6 +50,8 @@ class AppFixtures extends Fixture
         {
             return 'https://picsum.photos/id/' . array_rand($listOfPhotosIds) . '/' . $size;
         }
+
+        $this->addTestUser($passwordHasher, $manager);
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
 
@@ -233,6 +236,20 @@ class AppFixtures extends Fixture
             $manager->persist($rating);
         }
 
+        $manager->flush();
+    }
+
+    private function addTestUser(PasswordHasherInterface $passwordHasher, ObjectManager $manager): void
+    {
+        $user = new User();
+        $user
+            ->setEmail("test@email.com")
+            ->setRoles(['ROLE_USER'])
+            ->setPassword($passwordHasher->hash("test"))
+            ->setUsername("test")
+            ->setCreatedAt()
+            ->setUpdatedAt();
+        $manager->persist($user);
         $manager->flush();
     }
 }
