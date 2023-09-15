@@ -20,6 +20,10 @@ abstract class AbstractApiControllerTest extends ApiTestCase
     private UserPasswordHasher $userPasswordHasher;
     private User $testUser;
 
+    protected const TEST_USERNAME = 'test';
+    protected const TEST_PASSWORD = 'test';
+    protected const TEST_EMAIL = 'test@email.com';
+
     abstract public function test(): void;
 
     /**
@@ -102,7 +106,7 @@ abstract class AbstractApiControllerTest extends ApiTestCase
     {
         $userRepository = static::getContainer()->get(UserRepository::class);
 
-        $testUser = $userRepository->findOneBy(['email' => 'test@email.com']);
+        $testUser = $userRepository->findOneBy(['email' => self::TEST_EMAIL]);
         if (!$testUser) {
             throw new Exception('Test user not found');
         }

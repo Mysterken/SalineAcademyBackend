@@ -72,7 +72,7 @@ class UpdateUserPassword extends AbstractController
 
         return $this->json([
             'status' => 'success',
-            'message' => 'Password updated',
+            'message' => 'Password successfully updated',
         ], 200);
     }
 }
