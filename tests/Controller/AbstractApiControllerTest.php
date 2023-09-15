@@ -37,6 +37,11 @@ abstract class AbstractApiControllerTest extends ApiTestCase
         return $this->apiUrl;
     }
 
+    protected function getApiUrlWithId(int $id): string
+    {
+        return str_replace('{id}', $id, $this->getApiUrl());
+    }
+
     /**
      * @throws Exception
      * @throws TransportExceptionInterface
@@ -93,7 +98,7 @@ abstract class AbstractApiControllerTest extends ApiTestCase
     /**
      * @throws Exception
      */
-    protected function setTestUser(): void
+    private function setTestUser(): void
     {
         $userRepository = static::getContainer()->get(UserRepository::class);
 
