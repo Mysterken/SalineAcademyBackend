@@ -43,7 +43,7 @@ class Tag
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['tag:read', 'tag:write'])]
+    #[Groups(['tag:read', 'tag:write', 'masterclass:list'])]
     private ?string $name = null;
 
     #[ORM\ManyToMany(targetEntity: Masterclass::class, mappedBy: 'tags')]
