@@ -199,6 +199,8 @@ class AppFixtures extends Fixture
             $manager->persist($masterclass);
         }
 
+        $this->addInstruments($manager, $masterclasses);
+
         for ($i = 0; $i < random_int(15, 50); $i++) {
             $task = new Task();
             $task
@@ -250,6 +252,43 @@ class AppFixtures extends Fixture
             ->setCreatedAt()
             ->setUpdatedAt();
         $manager->persist($user);
+        $manager->flush();
+    }
+
+    private function addInstruments(ObjectManager $manager, array $masterclasses): void
+    {
+        $instruments = [
+            'Piano',
+            'Violin',
+            'Guitar',
+            'Flute',
+            'Saxophone',
+            'Trumpet',
+            'Clarinet',
+            'Cello',
+            'Harp',
+            'Trombone',
+            'Drums',
+            'Bass Guitar',
+            'Oboe',
+            'Accordion',
+            'Ukulele',
+            'Banjo',
+            'Mandolin',
+            'Harmonica',
+            'Tuba',
+            'Viola',
+        ];
+
+        foreach ($instruments as $instrument) {
+            $tag = new Tag();
+            $tag->setName($instrument);
+            $manager->persist($tag);
+
+            $masterclass = $masterclasses[array_rand($masterclasses)];
+            $masterclass->addTag($tag);
+            $manager->persist($masterclass);
+        }
         $manager->flush();
     }
 }
