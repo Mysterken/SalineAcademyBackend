@@ -25,6 +25,28 @@ use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    const RANDOM_YOUTUBE_VIDEO_ID = [
+        "jgpJVI3tDbY",
+        "dbjgHkj-syM",
+        "85KJkpbh_us",
+        "PpR1WhTYBLE",
+        "fR51x3LMbhs",
+        "NJTVx_HZ2D0",
+        "dDyXXrCqF70",
+        "IzTdpTHIgkc",
+        "XvytD6fewQc",
+        "LUIXtDO4d8s",
+        "Ac3BrE-Wy3o",
+        "9MB3lvaCoek",
+        "85KJkpbh_us",
+        "DhEXeAnt6tc",
+        "FzzFtPjkyYM",
+        "CmkndPu2MSw",
+        "wrrnE9p4GyQ",
+        "9w6sdNs58tc",
+        "HYdP6OreERA",
+    ];
+
     /**
      * @throws Exception
      */
@@ -114,11 +136,12 @@ class AppFixtures extends Fixture
         }
 
         for ($i = 0; $i < random_int(15, 50); $i++) {
+            $videoUrl = 'https://youtu.be/' . self::RANDOM_YOUTUBE_VIDEO_ID[array_rand(self::RANDOM_YOUTUBE_VIDEO_ID)];
             $lesson = new Lesson();
             $lesson
                 ->setTitle($faker->word())
                 ->setDescription($faker->text())
-                ->setVideoUrl('https://www.youtube.com/watch?v=jfKfPfyJRdk')
+                ->setVideoUrl($videoUrl)
                 ->setMasterclass($masterclasses[array_rand($masterclasses)])
                 ->setMasterclassOrder($faker->numberBetween(1, 100))
                 ->setCreatedAt()
