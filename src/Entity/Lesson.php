@@ -56,25 +56,25 @@ class Lesson implements EntityTimestampInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['lesson:read'])]
+    #[Groups(['lesson:read', 'masterclass:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['lesson:read', 'lesson:write', 'lesson:update'])]
+    #[Groups(['lesson:read', 'lesson:write', 'lesson:update', 'masterclass:read'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['lesson:read', 'lesson:write', 'lesson:update'])]
+    #[Groups(['lesson:read', 'lesson:write', 'lesson:update', 'masterclass:read'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\Url(message: 'The url {{ value }} is not a valid url')]
-    #[Groups(['lesson:read', 'lesson:write', 'lesson:update'])]
+    #[Groups(['lesson:read', 'lesson:write', 'lesson:update', 'masterclass:read'])]
     private ?string $videoUrl = null;
 
     #[ORM\Column]
     #[Assert\GreaterThan(0)]
-    #[Groups(['lesson:read', 'lesson:write', 'lesson:update'])]
+    #[Groups(['lesson:read', 'lesson:write', 'lesson:update', 'masterclass:read'])]
     private ?int $masterclassOrder = null;
 
     #[ORM\ManyToOne(inversedBy: 'lessons')]
